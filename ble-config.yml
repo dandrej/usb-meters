@@ -1,0 +1,20 @@
+#devices:
+#  - UD24_BLE
+#  - DT24TW_BLE
+debug:
+  - scanner
+  - client
+  - protocols
+storage:
+  type: console
+  influxdb:
+    bucket: usb-meters
+    url: http://localhost:8086
+    org: drovalev
+    token: 3SMiB5ksX8rCB2zJE19hkz0goeav-pZiWMBJcft1k5PsWGB7DyxPv1r8qK-PwDxcZSfNP16XlT22ldCkd8kurg==
+  csv:
+    path: '.'
+    is_gzip: false
+  console:
+    type: pretty
+

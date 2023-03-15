@@ -1,0 +1,4 @@
+bleak==0.19.5
+influxdb_client==1.36.1
+PyYAML==6.0
+rich==13.3.2

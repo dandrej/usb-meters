@@ -1,0 +1,167 @@
+from bleak.backends.characteristic import BleakGATTCharacteristic
+from bleak.backends.device import BLEDevice
+from dataclasses import dataclass, field
+import datetime
+from binascii import hexlify
+
+from modulelog import ModuleLogging
+module_log = ModuleLogging(__name__)
+log, pprint = module_log.init()
+
+class Device:
+    def __init__(self, device:BLEDevice):
+        self.device = device
+        self.atorch_dc_part = bytearray(b'')
+        self.start= datetime.datetime.now().isoformat()
+    def tags(self):
+        return {'device':self.device.name, 'start':self.start}
+
+
+@dataclass
+class ATORCH_USB_METER_DATA:
+    Voltage:float
+    Amp: float
+    A_h:float
+    W_h:float
+    USB_Dn:float
+    USB_Dp:float
+    Temperature:float
+    Time:float
+    Backlight:int
+    OvrV:float
+    LowV:float
+    OvrC:float
+    Rest:bytearray
+    stamp: datetime.datetime = field(default_factory=datetime.datetime.now)
+
+    @classmethod
+    def create(cls, data:bytearray):
+        #       V       A      Ah    Wh       D+   D-   T     Time Bklt OvrV LowV OvrC
+        #01-03-0001fc-000000-000801-000003ff-0000-0000-001c-00020819-3c-0bb8-0000-03dd-00??
+        return cls(
+            Voltage = int.from_bytes(data[2:5])/100.,
+            Amp = int.from_bytes(data[5:8])/100.,
+            A_h = int.from_bytes(data[8:11])/1000.,
+            W_h = int.from_bytes(data[11:15])/100.,
+            USB_Dn = int.from_bytes(data[15:17]),
+            USB_Dp = int.from_bytes(data[17:19]),
+            Temperature = int.from_bytes(data[19:21]),
+            Time = datetime.timedelta(
+                hours=int.from_bytes(data[21:23]),
+                minutes=data[23],
+                seconds=data[24]
+            ).total_seconds(),
+            Backlight=data[25],
+            OvrV = int.from_bytes(data[26:28])/100.,
+            LowV = int.from_bytes(data[28:30])/100.,
+            OvrC = int.from_bytes(data[30:32])/100.,
+            Rest = data[32:]
+        )
+    def __rich_repr__(self):
+        yield 'V',self.Voltage
+        yield 'A',self.Amp
+        yield 'Ah',self.A_h
+        yield 'Wh',self.W_h
+        yield 'D+',self.USB_Dp
+        yield 'D-',self.USB_Dn
+        yield 'Temp',self.Temperature
+        yield 'Time',self.Time
+        yield 'Backlight',self.Backlight
+        yield 'OvrV',self.OvrV
+        yield 'LowV',self.LowV
+        yield 'OvrC',self.OvrC
+        yield 'Rest',hexlify(self.Rest)
+
+    @staticmethod
+    def measurement(): return 'at24-usb-meter'
+    @staticmethod
+    def tag_keys(): return None
+    @staticmethod
+    def field_keys(): return ('Voltage', 'Amp', 'A_h', 'W_h', 'USB_Dp','USB_Dn','Temperature','Time','OvrV','LowV','OvrC','Backlight')
+    @staticmethod
+    def time_key(): return 'stamp'
+
+@dataclass
+class ATORCH_DC_METER_DATA:
+    Voltage:float
+    Amp: float
+    Cap:float
+    Pwr:float
+    Fld1:bytearray
+    Temperature:float
+    TimeOn:float
+    Backlight:int
+    Fld2:bytearray
+    @classmethod
+    def create(cls, data:bytearray):
+        #        V       A    Cap     Pwr                  T    --Time-- Bklt
+        #01-02-000082-000000-003a98-00000000-000000000000-0014-0025-1a-28-3c-00000000
+        return cls(
+            Voltage = int.from_bytes(data[2:5])/10.,
+            Amp = int.from_bytes(data[5:8])/1000.,
+            Cap = int.from_bytes(data[8:11])/1000.,
+            Pwr = int.from_bytes(data[11:15])/100.,
+            Fld1 = data[15:21],
+            Temperature = int.from_bytes(data[21:23]),
+            TimeOn = datetime.timedelta(
+                hours=int.from_bytes(data[23:25]),
+                minutes=data[25],
+                seconds=data[26]
+            ).total_seconds(),
+            Backlight=data[27],
+            Fld2 = data[28:]
+        )
+    def __rich_repr__(self):
+        yield 'Voltage',self.Voltage
+        yield 'Amp',self.Amp
+        yield 'Cap',self.Cap
+        yield 'Pwr',self.Pwr
+        yield 'Temp',self.Temperature
+        yield 'TimeOn',self.TimeOn
+        yield 'Backlight',self.Backlight
+        yield 'Fld1',hexlify(self.Fld1)
+        yield 'Fld2',hexlify(self.Fld2)
+
+    @staticmethod
+    def measurement(): return 'dt24tw-usb-meter'
+    @staticmethod
+    def tag_keys(): return None
+    @staticmethod
+    def field_keys(): return ('Voltage', 'Amp', 'Cap', 'Pwr', 'Temperature','TimeOn','Backlight')
+    @staticmethod
+    def time_key(): return None
+
+
+def atorch_decode(device:Device, data: bytearray):
+    if device.atorch_dc_part!=bytearray(b''):
+        packet = ATORCH_DC_METER_DATA.create(device.atorch_dc_part+data)
+        device.atorch_dc_part = bytearray(b'')
+        return packet
+    if data[0:2]!=b'\xFF\x55':
+        log.debug('Wrong ATorch packet header: %s',data)
+        return None
+    if data[2]!=1:
+        log.debug('Wrong ATorch packet type: %s',data[2])
+        return None
+    payload = data[2:-1]
+    if payload[1]==3:
+        packet = ATORCH_USB_METER_DATA.create(payload)
+        return packet
+    if payload[1]==2:
+        device.atorch_dc_part = payload
+        return None
+    log.debug('Unknown ATORCH payload: %s', hexlify(payload))
+    return None
+
+def decode(device:Device, data: bytearray):
+    packet = atorch_decode(device,data)
+    return packet
+
+def get_read_data(device:Device, storage):
+    def read_data(_: BleakGATTCharacteristic, data: bytearray):
+        pprint(device.device.name)
+        #pprint(device.metadata)
+        decoded_data = decode(device,data)
+        if decoded_data is not None:
+            storage.write(decoded_data, device.tags())
+    return read_data
