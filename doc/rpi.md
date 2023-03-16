@@ -24,7 +24,7 @@ sudo dnf install rpi-imager
 11. Finish the setup by following the prompts
 
 ## Post setup steps
-These steps are optional
+
 ### Check your BLE device
 Check device name (`hci0` for RaspberryPi 3)
 ```bash
@@ -40,3 +40,8 @@ sudo hostnamectl set-hostname usbmeters
 systemctl reboot
 ```
 After that it will be possible to ssh in this device as `ssh usbmeters.local` and access the local InfluxDB instance (after installation) through `http://usbmeters.local:8086`
+
+### Install pip package
+```bash
+sudo apt-get install python3-pip
+```

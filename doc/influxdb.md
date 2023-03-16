@@ -35,7 +35,7 @@ From [here](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#install-i
 
 ## Set up InfluxDB through the UI
 From [here](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-influxdb-through-the-ui)
-1.  With InfluxDB running, visit http://your-raspberry-pi-address:8086 from desktop.
+1.  With InfluxDB running, visit http://usbmeters.local:8086 from desktop.
 2.  Click **Get Started**
 
 #### [Set up your initial user](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-your-initial-user)

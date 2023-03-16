@@ -44,8 +44,12 @@ class Scanner:
                 '0000ffe0-0000-1000-8000-00805f9b34fb'
             ]
         }
-        if not advertising_data.local_name: return
-        if advertising_data.local_name not in ['DT24TW_BLE']:#.startswith('FNB48s'): #'UD24_BLE'#:
+        names = match_data.get('names',())
+        if set(match_data.get('services',())) & set(advertising_data.service_uuids):
+            if names and advertising_data.local_name and advertising_data.local_name not in names:
+                log.debug('Device name %s(%s) service not found',device.name,advertising_data.local_name)
+                return
+        elif names and advertising_data.local_name not in names:
             log.debug('Device name %s(%s) missmatch',device.name,advertising_data.local_name)
             return
         if device.address in self.__devices: return

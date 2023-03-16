@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, asdict
 import sys
 import asyncio
@@ -13,6 +14,7 @@ import logging
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
+from rich.pretty import pprint as rich_pprint
 
 
 class CSVStorage:
@@ -47,8 +49,8 @@ class PrintStorage:
         self.type = type
     def write(self, metrics, tags):
         if self.type=='pretty':
-            pprint(metrics)
-            if tags: pprint(tags)
+            rich_pprint(metrics)
+            if tags: rich_pprint(tags)
 
 @dataclass
 class InfluxClientArgs:

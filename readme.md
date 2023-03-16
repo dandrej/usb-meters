@@ -4,4 +4,4 @@ So let's go to work.
 ## Main steps
 * [Create an image for RaspberryPi](doc/rpi.md)
 * [Install and configure InfluxDB](doc/influxdb.md)
-* Install and configure loggers
+* [Install and configure loggers](doc/software.md)

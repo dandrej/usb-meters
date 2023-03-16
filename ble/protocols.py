@@ -39,22 +39,22 @@ class ATORCH_USB_METER_DATA:
         #       V       A      Ah    Wh       D+   D-   T     Time Bklt OvrV LowV OvrC
         #01-03-0001fc-000000-000801-000003ff-0000-0000-001c-00020819-3c-0bb8-0000-03dd-00??
         return cls(
-            Voltage = int.from_bytes(data[2:5])/100.,
-            Amp = int.from_bytes(data[5:8])/100.,
-            A_h = int.from_bytes(data[8:11])/1000.,
-            W_h = int.from_bytes(data[11:15])/100.,
-            USB_Dn = int.from_bytes(data[15:17]),
-            USB_Dp = int.from_bytes(data[17:19]),
-            Temperature = int.from_bytes(data[19:21]),
+            Voltage = int.from_bytes(data[2:5], byteorder='big')/100.,
+            Amp = int.from_bytes(data[5:8], byteorder='big')/100.,
+            A_h = int.from_bytes(data[8:11], byteorder='big')/1000.,
+            W_h = int.from_bytes(data[11:15], byteorder='big')/100.,
+            USB_Dn = int.from_bytes(data[15:17], byteorder='big'),
+            USB_Dp = int.from_bytes(data[17:19], byteorder='big'),
+            Temperature = int.from_bytes(data[19:21], byteorder='big'),
             Time = datetime.timedelta(
-                hours=int.from_bytes(data[21:23]),
+                hours=int.from_bytes(data[21:23], byteorder='big'),
                 minutes=data[23],
                 seconds=data[24]
             ).total_seconds(),
             Backlight=data[25],
-            OvrV = int.from_bytes(data[26:28])/100.,
-            LowV = int.from_bytes(data[28:30])/100.,
-            OvrC = int.from_bytes(data[30:32])/100.,
+            OvrV = int.from_bytes(data[26:28], byteorder='big')/100.,
+            LowV = int.from_bytes(data[28:30], byteorder='big')/100.,
+            OvrC = int.from_bytes(data[30:32], byteorder='big')/100.,
             Rest = data[32:]
         )
     def __rich_repr__(self):
@@ -96,15 +96,18 @@ class ATORCH_DC_METER_DATA:
     def create(cls, data:bytearray):
         #        V       A    Cap     Pwr                  T    --Time-- Bklt
         #01-02-000082-000000-003a98-00000000-000000000000-0014-0025-1a-28-3c-00000000
+        #01-02-000080-000000-003a98-00000026-000000000000-0016-0123-10-37-3c-0000000023
+        #Voltage=12.8, Amp=0.0, Cap=150.0, Pwr=0.38, Temp=22, TimeOn='12 days, 3:16:55', Backlight=60, Fld1=b'000000000000', Fld2=b'0000000023'
+        #log.debug("Raw:%s",hexlify(data))
         return cls(
-            Voltage = int.from_bytes(data[2:5])/10.,
-            Amp = int.from_bytes(data[5:8])/1000.,
-            Cap = int.from_bytes(data[8:11])/1000.,
-            Pwr = int.from_bytes(data[11:15])/100.,
+            Voltage = int.from_bytes(data[2:5], byteorder='big')/10.,
+            Amp = int.from_bytes(data[5:8], byteorder='big')/1000.,
+            Cap = int.from_bytes(data[8:11], byteorder='big')/100.,
+            Pwr = int.from_bytes(data[11:15], byteorder='big')/100.,
             Fld1 = data[15:21],
-            Temperature = int.from_bytes(data[21:23]),
+            Temperature = int.from_bytes(data[21:23], byteorder='big'),
             TimeOn = datetime.timedelta(
-                hours=int.from_bytes(data[23:25]),
+                hours=int.from_bytes(data[23:25], byteorder='big'),
                 minutes=data[25],
                 seconds=data[26]
             ).total_seconds(),
@@ -117,7 +120,7 @@ class ATORCH_DC_METER_DATA:
         yield 'Cap',self.Cap
         yield 'Pwr',self.Pwr
         yield 'Temp',self.Temperature
-        yield 'TimeOn',self.TimeOn
+        yield 'TimeOn',str(datetime.timedelta(seconds=self.TimeOn))
         yield 'Backlight',self.Backlight
         yield 'Fld1',hexlify(self.Fld1)
         yield 'Fld2',hexlify(self.Fld2)
