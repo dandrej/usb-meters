@@ -89,7 +89,7 @@ class ATORCH_DC_METER_DATA:
     Pwr:float
     Fld1:bytearray
     Temperature:float
-    TimeOn:float
+    RunTime:float
     Backlight:int
     Fld2:bytearray
     @classmethod
@@ -97,7 +97,7 @@ class ATORCH_DC_METER_DATA:
         #        V       A    Cap     Pwr                  T    --Time-- Bklt
         #01-02-000082-000000-003a98-00000000-000000000000-0014-0025-1a-28-3c-00000000
         #01-02-000080-000000-003a98-00000026-000000000000-0016-0123-10-37-3c-0000000023
-        #Voltage=12.8, Amp=0.0, Cap=150.0, Pwr=0.38, Temp=22, TimeOn='12 days, 3:16:55', Backlight=60, Fld1=b'000000000000', Fld2=b'0000000023'
+        #Voltage=12.8, Amp=0.0, Cap=150.0, Pwr=0.38, Temp=22, RunTime='12 days, 3:16:55', Backlight=60, Fld1=b'000000000000', Fld2=b'0000000023'
         #log.debug("Raw:%s",hexlify(data))
         return cls(
             Voltage = int.from_bytes(data[2:5], byteorder='big')/10.,
@@ -106,7 +106,7 @@ class ATORCH_DC_METER_DATA:
             Pwr = int.from_bytes(data[11:15], byteorder='big')/100.,
             Fld1 = data[15:21],
             Temperature = int.from_bytes(data[21:23], byteorder='big'),
-            TimeOn = datetime.timedelta(
+            RunTime = datetime.timedelta(
                 hours=int.from_bytes(data[23:25], byteorder='big'),
                 minutes=data[25],
                 seconds=data[26]
@@ -120,7 +120,7 @@ class ATORCH_DC_METER_DATA:
         yield 'Cap',self.Cap
         yield 'Pwr',self.Pwr
         yield 'Temp',self.Temperature
-        yield 'TimeOn',str(datetime.timedelta(seconds=self.TimeOn))
+        yield 'RunTime',str(datetime.timedelta(seconds=self.RunTime))
         yield 'Backlight',self.Backlight
         yield 'Fld1',hexlify(self.Fld1)
         yield 'Fld2',hexlify(self.Fld2)
@@ -130,7 +130,7 @@ class ATORCH_DC_METER_DATA:
     @staticmethod
     def tag_keys(): return None
     @staticmethod
-    def field_keys(): return ('Voltage', 'Amp', 'Cap', 'Pwr', 'Temperature','TimeOn','Backlight')
+    def field_keys(): return ('Voltage', 'Amp', 'Cap', 'Pwr', 'Temperature','RunTime','Backlight')
     @staticmethod
     def time_key(): return None
 

@@ -87,20 +87,23 @@ class InfluxDBStorageAsync:
         self.queue = asyncio.Queue()
         cli = InfluxDBClientAsync(**asdict(client_args),**client_kwargs)
         self.__debug(cli)
-        write_api = cli.write_api()
+        write_api = cli.write_api() #TODO: set WriteOptions from config file
         while True:
-            metrics, tags = await self.queue.get()
-            if metrics is None: break
-            point = Point.from_dict(
-                asdict(metrics),
-                record_measurement_name = metrics.measurement(),
-                record_tag_keys = metrics.tag_keys(),
-                record_field_keys = metrics.field_keys(),
-                record_time_key = metrics.time_key()
-            )
-            if tags:
-                point._tags.update(tags)
-            await write_api.write(bucket = self.bucket, record = point)
+            try:
+                metrics, tags = await self.queue.get()
+                if metrics is None: break
+                point = Point.from_dict(
+                    asdict(metrics),
+                    record_measurement_name = metrics.measurement(),
+                    record_tag_keys = metrics.tag_keys(),
+                    record_field_keys = metrics.field_keys(),
+                    record_time_key = metrics.time_key()
+                )
+                if tags:
+                    point._tags.update(tags) # TODO: consider to use PointSettings
+                await write_api.write(bucket = self.bucket, record = point)
+            except Exception as e:
+                log.exception('Error in influx thread: %s', str(e))
         await cli.close()
 
     def __close(self,task):

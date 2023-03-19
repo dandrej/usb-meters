@@ -10,12 +10,12 @@ debug:
   - protocols
   - storage
 storage:
-  type: console
+  type: influxdb
   influxdb:
-    bucket: usb-meters
+    bucket: ble-meters
     url: http://localhost:8086
-    org: drovalev
-    token: 3SMiB5ksX8rCB2zJE19hkz0goeav-pZiWMBJcft1k5PsWGB7DyxPv1r8qK-PwDxcZSfNP16XlT22ldCkd8kurg==
+    org: org
+    token: Qg3cCxFyUmLtDIqcEC26oMn0QkhymbDyAvXfT4YrH5Qz-cKi_0sO_8c4Bdl5by2tk0gztDibcBZ192ZNJCqr_g==
   csv:
     path: '.'
     is_gzip: false

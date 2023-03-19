@@ -28,11 +28,15 @@ class Scanner:
 
     async def run_client(self,device):
         await self.scanner.stop()
-        log.debug('Scanner paused')
-        self.__devices[device.address]=Client(device, self.__storage, self.__quit, self.client_done)
-        await self.__devices[device.address].connect_event.wait()
-        await self.scanner.start()
-        log.debug('Scanner resumed')
+        try:
+            log.debug('Scanner paused')
+            self.__devices[device.address]=Client(device, self.__storage, self.__quit, self.client_done)
+            await self.__devices[device.address].connect_event.wait()
+        except Exception as e:
+            log.exception('Scanner failed: %s',str(e))
+        finally:
+            await self.scanner.start()
+            log.debug('Scanner resumed')
 
     def detect(self,device:BLEDevice, advertising_data:AdvertisementData):
         match_data = {
