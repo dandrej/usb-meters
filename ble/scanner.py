@@ -2,6 +2,7 @@ import asyncio
 from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
+from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
 from client import Client
 
 from modulelog import ModuleLogging
@@ -9,13 +10,17 @@ module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
 
 class Scanner:
-    def __init__(self, quit:asyncio.Task, storage):
+    def __init__(self, match_data, quit:asyncio.Task, storage):
         self.__quit = quit
         self.__storage = storage
         self.__devices = {}
+        self.match_data = match_data
+        
 
     async def run(self):
-        self.scanner = BleakScanner(self.detect)
+        service_uuids = self.match_data.get('services')
+        #log.debug('services_uuids: %s',service_uuids)
+        self.scanner = BleakScanner(self.detect,service_uuids=service_uuids)
         await self.scanner.start()
         await self.__quit
         log.debug('Scanner stops')
@@ -35,21 +40,13 @@ class Scanner:
         except Exception as e:
             log.exception('Scanner failed: %s',str(e))
         finally:
+            log.debug('Scanner resume...')
             await self.scanner.start()
             log.debug('Scanner resumed')
 
     def detect(self,device:BLEDevice, advertising_data:AdvertisementData):
-        match_data = {
-            'names':[
-                'DT24TW_BLE',
-                'UD24_BLE'
-            ],
-            'services': [
-                '0000ffe0-0000-1000-8000-00805f9b34fb'
-            ]
-        }
-        names = match_data.get('names',())
-        if set(match_data.get('services',())) & set(advertising_data.service_uuids):
+        names = self.match_data.get('names',())
+        if set(self.match_data.get('services',())) & set(advertising_data.service_uuids):
             if names and advertising_data.local_name and advertising_data.local_name not in names:
                 log.debug('Device name %s(%s) service not found',device.name,advertising_data.local_name)
                 return

@@ -3,7 +3,8 @@ import yaml
 import sys
 from pathlib import Path
 from scanner import Scanner
-from modulelog import debug_on
+from modulelog import setLevel
+import rich
 
 class QuitSignal:
     def __init__(self):
@@ -18,8 +19,11 @@ class QuitSignal:
         self.event.set()
 
 async def run_scanner(config):
-    if 'debug' in config:
-        debug_on(config['debug'])
+
+    if 'logging' in config:
+        console = rich.get_console()
+        for level, modules in config['logging'].items():
+            setLevel(modules,level,console)
 
     qs = QuitSignal()
     storage = None
@@ -31,7 +35,7 @@ async def run_scanner(config):
         storage_params = config['storage'][type]
         storage = storage_class(qs.task,**storage_params)
     if storage is None: storage = PrintStorage(qs.task)
-    scanner = Scanner(qs.task, storage)
+    scanner = Scanner(config.get('devices',{}),qs.task, storage)
     await scanner.run()
 
 config = None

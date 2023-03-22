@@ -38,7 +38,8 @@ class ATORCH_USB_METER_DATA:
     def create(cls, data:bytearray):
         #       V       A      Ah    Wh       D+   D-   T     Time Bklt OvrV LowV OvrC
         #01-03-0001fc-000000-000801-000003ff-0000-0000-001c-00020819-3c-0bb8-0000-03dd-00??
-        return cls(
+        log.debug("Raw:%s",hexlify(data))
+        ret = cls(
             Voltage = int.from_bytes(data[2:5], byteorder='big')/100.,
             Amp = int.from_bytes(data[5:8], byteorder='big')/100.,
             A_h = int.from_bytes(data[8:11], byteorder='big')/1000.,
@@ -57,6 +58,8 @@ class ATORCH_USB_METER_DATA:
             OvrC = int.from_bytes(data[30:32], byteorder='big')/100.,
             Rest = data[32:]
         )
+        pprint(ret)
+        return ret
     def __rich_repr__(self):
         yield 'V',self.Voltage
         yield 'A',self.Amp
@@ -98,8 +101,8 @@ class ATORCH_DC_METER_DATA:
         #01-02-000082-000000-003a98-00000000-000000000000-0014-0025-1a-28-3c-00000000
         #01-02-000080-000000-003a98-00000026-000000000000-0016-0123-10-37-3c-0000000023
         #Voltage=12.8, Amp=0.0, Cap=150.0, Pwr=0.38, Temp=22, RunTime='12 days, 3:16:55', Backlight=60, Fld1=b'000000000000', Fld2=b'0000000023'
-        #log.debug("Raw:%s",hexlify(data))
-        return cls(
+        log.debug("Raw:%s",hexlify(data))
+        ret = cls(
             Voltage = int.from_bytes(data[2:5], byteorder='big')/10.,
             Amp = int.from_bytes(data[5:8], byteorder='big')/1000.,
             Cap = int.from_bytes(data[8:11], byteorder='big')/100.,
@@ -114,6 +117,8 @@ class ATORCH_DC_METER_DATA:
             Backlight=data[27],
             Fld2 = data[28:]
         )
+        pprint(ret)
+        return ret
     def __rich_repr__(self):
         yield 'Voltage',self.Voltage
         yield 'Amp',self.Amp

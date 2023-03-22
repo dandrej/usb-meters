@@ -86,7 +86,7 @@ class InfluxDBStorageAsync:
     async def __run(self,client_args:InfluxClientArgs, client_kwargs:dict):
         self.queue = asyncio.Queue()
         cli = InfluxDBClientAsync(**asdict(client_args),**client_kwargs)
-        self.__debug(cli)
+        #self.__debug(cli)
         write_api = cli.write_api() #TODO: set WriteOptions from config file
         while True:
             try:
@@ -102,6 +102,7 @@ class InfluxDBStorageAsync:
                 if tags:
                     point._tags.update(tags) # TODO: consider to use PointSettings
                 await write_api.write(bucket = self.bucket, record = point)
+                #log.debug('send')
             except Exception as e:
                 log.exception('Error in influx thread: %s', str(e))
         await cli.close()
@@ -114,4 +115,4 @@ class InfluxDBStorageAsync:
         if module_log.console is None: return
         for _, logger in cli.conf.loggers.items():
             logger.setLevel(logging.DEBUG)
-            logger.addHandler(module_log.debug_handler())
+            logger.addHandler(module_log.log_handler())

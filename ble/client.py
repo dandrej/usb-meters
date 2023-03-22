@@ -28,4 +28,6 @@ class Client:
             log.exception('Client failed: %s', str(e))
         log.debug('Client %s disconnected',device.address)
         self.on_disconnect(device.address)
+        if not self.connect_event.is_set(): self.connect_event.set()
+        
 
