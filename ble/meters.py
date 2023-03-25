@@ -54,3 +54,6 @@ if config is None:
     sys.exit(1)
 
 asyncio.run(run_scanner(config))
+
+# TODO: start script with systemd
+# TODO: write base InfluxDB dashboard

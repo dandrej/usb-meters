@@ -38,7 +38,7 @@ From [here](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-in
 1.  With InfluxDB running, visit http://usbmeters.local:8086 from desktop.
 2.  Click **Get Started**
 
-#### [Set up your initial user](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-your-initial-user)
+### [Set up your initial user](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-your-initial-user)
 
 1.  Enter a **Username** for your initial user.
 2.  Enter a **Password** and **Confirm Password** for your user.
@@ -47,3 +47,20 @@ From [here](https://docs.influxdata.com/influxdb/v2.6/install/?t=Linux#set-up-in
 5.  Click **Continue**.
 
 Your InfluxDB instance is now initialized.
+
+## Additional setup for usb meters
+
+### Get an API token
+
+- Visit http://usbmeters.local:8086 from desktop.
+- Navigate to `Load Data -> API Tokens`
+- Press `+ GENERATE API TOKEN` button and `All Access API Token`
+- Enter token description and click `Save`
+- Store token to `ble-config.yml` as described in [Software](software.md)
+
+### Add additional bucket
+- Navigate to `Load Data -> Buckets`
+- Press `+ CREATE BUCKET` button
+- Enter bucket name. (I use `ble-meters` as the bucket name)
+- Press `OLDER THAN` button and choose where the old data will be deleted from database. (I choose `72 hours`)
+- Store the bucket name to `ble-config.yml` as described in [Software](software.md)

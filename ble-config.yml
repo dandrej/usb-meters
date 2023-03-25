@@ -4,15 +4,6 @@ devices:
     - DT24TW_BLE
   services:
     - '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
-logging:
-  warning:
-    - storage
-    #- scanner
-    #- client
-  debug:
-    - scanner
-    - client
-    - protocols
 storage:
   type: influxdb
   influxdb:
@@ -25,4 +16,13 @@ storage:
     is_gzip: false
   console:
     type: pretty
+logging:
+  warning:
+    - storage
+    #- scanner
+    #- client
+  debug:
+    - scanner
+    - client
+    - protocols
 
