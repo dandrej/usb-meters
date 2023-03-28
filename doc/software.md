@@ -1,4 +1,4 @@
-# Software
+# Software (Bluetooth)
 ## Install
 ```bash
 git clone https://github.com/dandrej/usb-meters.git
@@ -54,3 +54,18 @@ The logging key of the configuration file contains the logging configuration par
 ```bash
 python ble/meters.py
 ```
+
+# Software (USB)
+Unfortunately, I do not find how to connect to FNIRSI USB meter through Bluetooth. But I found a way of such a connection through USB. This set of scripts works automatically when the meter is connected to PC by its PC micro usb port.
+## Edit config file
+Open `usb-config.yml` and edit its `storage` section as described above in the section 'Choose the right data output'
+## Install required files
+``` bash
+./usb-install.bash
+```
+## Connect the device
+Connect the micro usb cable to the device PC port and another side of this cable to the desktop USB port. The installed udev rule launches the `fnirsi` systemd service and the data recording starts. Check the service availability by typing
+``` bash
+systemctl status fnirsi
+```
+_Notes:_ This script does not work on my Raspberry Pi 3, due to some timeouts in USB transfers. May be due to pure power or a bad USB cable. I will check it later. But the script works perfectly in my notebook.

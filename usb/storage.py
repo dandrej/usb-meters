@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import asdict
 from pathlib import Path
 import csv
@@ -6,11 +7,13 @@ import gzip
 import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.write.point import Point
+from urllib3.util.retry import Retry
 
 import logging
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
+from rich.pretty import pprint as rich_pprint
 
 class InfluxStorage:
     def __init__(self, bucket:str, url:str, org:str | None = None,
@@ -18,8 +21,9 @@ class InfluxStorage:
                 enable_gzip = False, default_tags=[], **kwargs):
         self.cli = influxdb_client.InfluxDBClient(
             url=url,org=org,token=token,debug=debug,timeout=timeout,enable_gzip=enable_gzip,
-            default_tags=default_tags,**kwargs)
-        self.__debug()
+            default_tags=default_tags,retries=Retry(),**kwargs)
+        if log.isEnabledFor(logging.DEBUG):
+            self.__debug()
         self.write_api = self.cli.write_api(write_options=SYNCHRONOUS)
         self.bucket = bucket
 
@@ -43,7 +47,7 @@ class InfluxStorage:
         if module_log.console is None: return
         for _, logger in self.cli.conf.loggers.items():
             logger.setLevel(logging.DEBUG)
-            logger.addHandler(module_log.debug_handler())
+            logger.addHandler(module_log.log_handler())
 
 
 class CSVStorage:
@@ -65,16 +69,19 @@ class CSVStorage:
                 self.__fd = open(self.__path/(' '.join(tags.values())+'.csv'),'w',newline='')
             self.__writer = csv.DictWriter(self.__fd, (metrics[0].time_key(),)+metrics[0].field_keys(),extrasaction='ignore',**self.__kwargs)
             self.__writer.writeheader()
+        elif self.__fd is None: return
         self.__writer.writerows((asdict(m) for m in metrics))
     def close(self):
-        if self.__fd is not None: self.__fd.close()
+        if self.__fd is not None: 
+            self.__fd.close()
+            self.__fd = None
 
 class PrintStorage:
     def __init__(self, type='pretty'):
         self.type = type
     def write(self, metrics, tags):
         if self.type=='pretty':
-            pprint(metrics)
-            if tags: pprint(tags)
+            rich_pprint(metrics)
+            if tags: rich_pprint(tags)
     def close(self):
         ...

@@ -1,0 +1,8 @@
+# FNIRSI FNB48
+ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="003a", MODE="0666", TAG+="systemd", ENV{SYSTEMD_WANTS}+="fnirsi.service"
+# FNIRSI C1
+ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="003b", MODE="0666", TAG+="systemd", ENV{SYSTEMD_WANTS}+="fnirsi.service"
+# FNIRSI FNB48S
+ACTION=="add", ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="0049", MODE="0666", TAG+="systemd", ENV{SYSTEMD_WANTS}+="fnirsi.service"
+# FNIRSI FNB58
+ACTION=="add", ATTRS{idVendor}=="2e3c", ATTRS{idProduct}=="5558", MODE="0666", TAG+="systemd", ENV{SYSTEMD_WANTS}+="fnirsi.service"

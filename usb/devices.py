@@ -2,6 +2,9 @@ import usb.core
 import usb.util
 import datetime
 
+from modulelog import ModuleLogging
+module_log = ModuleLogging(__name__)
+log, pprint = module_log.init()
 
 CMD1 = b"\xaa\x81" + b"\x00" * 61 + b"\x8e"
 CMD2 = b"\xaa\x82" + b"\x00" * 61 + b"\x96"

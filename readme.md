@@ -6,6 +6,12 @@ So let's go to work.
 * [Install and configure InfluxDB][influxdb]
 * [Install and configure loggers][software]
 
+## Acknowlegements
+I would like to thanks the following projects which code and information have been used in this project:
+- [tomwang221812/atorch_meter_pyhton](https://github.com/tomwang221812/atorch_meter_pyhton)
+- [NiceLabs/atorch-console](https://github.com/NiceLabs/atorch-console)
+- [baryluk/fnirsi-usb-power-data-logger](https://github.com/baryluk/fnirsi-usb-power-data-logger)
+
 [software]: doc/software.md
 [influxdb]: doc/influxdb.md
 [rpi]: doc/rpi.md

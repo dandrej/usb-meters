@@ -9,16 +9,20 @@ class ModuleLogging:
         self.log = logging.getLogger(name)
         self.log.addHandler(logging.NullHandler())
         self.console = None
+        self.handler = None
     def pprint(self, obj, **kwargs):
-        if self.console is None: return
+        if not self.log.isEnabledFor(logging.DEBUG): return
         rich_pprint(obj,**kwargs)
-    def debug_on(self, console=None):
-        if console is None:
-            console = rich.get_console()
-        self.console = console
-        self.log.addHandler(self.debug_handler())
-        self.log.setLevel(logging.DEBUG)
-    def debug_handler(self):
+    def setLevel(self, level=logging.DEBUG, console=None):
+        if self.console is None:
+            if console is None:
+                console = rich.get_console()
+            self.console = console
+        if self.handler is None:
+            self.handler = self.log_handler()
+            self.log.addHandler(self.handler)
+        self.log.setLevel(level)
+    def log_handler(self):
         return RichHandler(
             rich_tracebacks=True,
             console=self.console,
@@ -29,6 +33,13 @@ class ModuleLogging:
     def init(self):
         return self.log, self.pprint
 
-def debug_on(modules,console=rich.get_console()):
+def setLevel(modules, level:str='debug', console=rich.get_console()):
+    levels = {
+        'critical': logging.CRITICAL,
+        'error': logging.ERROR,
+        'warning': logging.WARNING,
+        'info': logging.INFO,
+        'debug': logging.DEBUG
+    }
     for module_name in modules:
-        import_module(module_name).module_log.debug_on(console)
+        import_module(module_name).module_log.setLevel(levels[level],console)

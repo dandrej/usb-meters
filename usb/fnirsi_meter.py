@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import datetime
 import time
 import usb
@@ -7,7 +8,10 @@ from storage import InfluxStorage, CSVStorage
 import yaml
 import sys
 from pathlib import Path
-from modulelog import debug_on
+from modulelog import setLevel
+import logging
+import rich
+from rich.pretty import pprint
 
 class Cont:
     def __init__(self):
@@ -23,7 +27,8 @@ def main(storage):
     ret = get_device()
     if ret is None: return 1
     dev, cmd, tmo, tags = ret
-    print(dev, tags)
+    #print(dev, tags)
+    pprint(tags)
     try:
         ep_out, ep_in = get_ep(dev)
     except usb.core.USBError:
@@ -36,7 +41,12 @@ def main(storage):
     time.sleep(0.1)
     cont = Cont()
     while cont:
-        data = ep_in.read(size_or_buffer=64, timeout=1000)
+        try:
+            data = ep_in.read(size_or_buffer=64, timeout=1000)
+        except Exception as e:
+            logging.exception('Read USB error')
+            cont.cont=False
+            continue
         metrics = FNIRSIMetric.decode(data)
         if metrics:
             storage.write(metrics,tags)
@@ -52,6 +62,7 @@ for prefix in (Path.cwd(), Path(__file__).resolve().parent, Path.home()/'.config
     if config_file.exists():
         try:
             config = yaml.load(config_file.open(), Loader=yaml.SafeLoader)
+            print(f'Use {config_file} config file')
         except yaml.YAMLError as e:
             if hasattr(e, 'problem_mark'):
                 mark = e.problem_mark
@@ -61,8 +72,10 @@ if config is None:
     print('No valid config file found')
     sys.exit(1)
 
-if 'debug' in config:
-    debug_on(config['debug'])
+if 'logging' in config:
+    console = rich.get_console()
+    for level, modules in config['logging'].items():
+        setLevel(modules,level,console)
 
 storage = None
 from storage import PrintStorage

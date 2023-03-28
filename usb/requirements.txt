@@ -1,0 +1,7 @@
+pyusb
+urllib3
+crc
+influxdb_client
+PyYAML
+rich
+

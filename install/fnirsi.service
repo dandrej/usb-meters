@@ -1,0 +1,11 @@
+[Unit]
+Description=FNIRSI USB Meter handler
+After=network.target
+
+[Service]
+Type=exec
+ExecStart=/usr/local/bin/fnirsi/fnirsi_meter.py
+User=root
+
+[Install]
+WantedBy=multi-user.target

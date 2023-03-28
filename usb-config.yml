@@ -1,6 +1,11 @@
 storage:
-  type: console
+  type: influxdb
   influxdb:
+    bucket: ble-meters
+    url: http://localhost:8086
+    org: org
+    token: Qg3cCxFyUmLtDIqcEC26oMn0QkhymbDyAvXfT4YrH5Qz-cKi_0sO_8c4Bdl5by2tk0gztDibcBZ192ZNJCqr_g==
+  influxdb-dev:
     bucket: usb-meters
     url: http://localhost:8086
     org: drovalev
@@ -10,6 +15,7 @@ storage:
     is_gzip: false
   console:
     type: pretty
-debug:
-  - proto
-  - storage
+logging:
+  error:
+    - proto
+    - storage
