@@ -2,6 +2,7 @@ devices:
   names:
     - UD24_BLE
     - DT24TW_BLE
+    - DL24M_BLE
   services:
     - '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
 storage:
