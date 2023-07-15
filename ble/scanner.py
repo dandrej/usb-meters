@@ -3,7 +3,7 @@ from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
-from client import Client
+from atorch import ATORCHClient
 
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
@@ -15,7 +15,7 @@ class Scanner:
         self.__storage = storage
         self.__devices = {}
         self.match_data = match_data
-        
+
 
     async def run(self):
         service_uuids = self.match_data.get('services')
@@ -35,7 +35,10 @@ class Scanner:
         await self.scanner.stop()
         try:
             log.debug('Scanner paused')
-            self.__devices[device.address]=Client(device, self.__storage, self.__quit, self.client_done)
+            client = ATORCHClient(device, self.__storage)
+            self.__devices[device.address] = client
+            self.__quit.add_done_callback(lambda task: client.disconnect_event.set())
+            client.task.add_done_callback(lambda task: self.client_done(device.address))
             await self.__devices[device.address].connect_event.wait()
         except Exception as e:
             log.exception('Scanner failed: %s',str(e))

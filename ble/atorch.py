@@ -3,19 +3,11 @@ from bleak.backends.device import BLEDevice
 from dataclasses import dataclass, field
 import datetime
 from binascii import hexlify
+from client import Client
 
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
-
-class Device:
-    def __init__(self, device:BLEDevice):
-        self.device = device
-        self.atorch_dc_part = bytearray(b'')
-        self.start= datetime.datetime.now().isoformat()
-    def tags(self):
-        return {'device':self.device.name, 'start':self.start}
-
 
 @dataclass
 class ATORCH_USB_METER_DATA:
@@ -140,36 +132,51 @@ class ATORCH_DC_METER_DATA:
     def time_key(): return None
 
 
-def atorch_decode(device:Device, data: bytearray):
-    if device.atorch_dc_part!=bytearray(b''):
-        packet = ATORCH_DC_METER_DATA.create(device.atorch_dc_part+data)
-        device.atorch_dc_part = bytearray(b'')
-        return packet
-    if data[0:2]!=b'\xFF\x55':
-        log.debug('Wrong ATorch packet header: %s',data)
-        return None
-    if data[2]!=1:
-        log.debug('Wrong ATorch packet type: %s',data[2])
-        return None
-    payload = data[2:-1]
-    if payload[1]==3:
-        packet = ATORCH_USB_METER_DATA.create(payload)
-        return packet
-    if payload[1]==2:
-        device.atorch_dc_part = payload
-        return None
-    log.debug('Unknown ATORCH payload: %s', hexlify(payload))
-    return None
+class Device:
+    def __init__(self, device:BLEDevice):
+        self.device = device
+        self.atorch_dc_part = bytearray(b'')
+        self.start= datetime.datetime.now().isoformat()
+    def tags(self):
+        return {'device':self.device.name, 'start':self.start}
 
-def decode(device:Device, data: bytearray):
-    packet = atorch_decode(device,data)
-    return packet
+    def atorch_decode(self, data: bytearray):
+        if self.atorch_dc_part!=bytearray(b''):
+            packet = ATORCH_DC_METER_DATA.create(self.atorch_dc_part+data)
+            self.atorch_dc_part = bytearray(b'')
+            return packet
+        if data[0:2]!=b'\xFF\x55':
+            log.debug('Wrong ATorch packet header: %s',data)
+            return None
+        if data[2]!=1:
+            log.debug('Wrong ATorch packet type: %s',data[2])
+            return None
+        payload = data[2:-1]
+        if payload[1]==3:
+            packet = ATORCH_USB_METER_DATA.create(payload)
+            return packet
+        if payload[1]==2:
+            self.atorch_dc_part = payload
+            return None
+        log.debug('Unknown ATORCH payload: %s', hexlify(payload))
+        return None
 
-def get_read_data(device:Device, storage):
-    def read_data(_: BleakGATTCharacteristic, data: bytearray):
-        pprint(device.device.name)
-        #pprint(device.metadata)
-        decoded_data = decode(device,data)
-        if decoded_data is not None:
-            storage.write(decoded_data, device.tags())
-    return read_data
+    def decode(self, data: bytearray):
+        packet = self.atorch_decode(data)
+        return packet
+
+    def get_read_data(self, storage):
+        def read_data(_: BleakGATTCharacteristic, data: bytearray):
+            pprint(self.device.name)
+            #pprint(device.metadata)
+            decoded_data = self.decode(data)
+            if decoded_data is not None:
+                storage.write(decoded_data, self.tags())
+        return read_data
+
+class ATORCHClient(Client):
+    async def run_protocol(self, client, device, storage)->None:
+        dev = Device(device)
+        await client.start_notify('0000ffe1-0000-1000-8000-00805f9b34fb',
+                                dev.get_read_data(storage))
+        await self.disconnect_event.wait()

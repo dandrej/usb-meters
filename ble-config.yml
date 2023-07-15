@@ -6,7 +6,7 @@ devices:
   services:
     - '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
 storage:
-  type: influxdb
+  type: console
   influxdb:
     bucket: ble-meters
     url: http://localhost:8086
@@ -23,7 +23,7 @@ logging:
     #- scanner
     #- client
   debug:
-    - scanner
+    #- scanner
     - client
-    - protocols
+    #- atorch
 

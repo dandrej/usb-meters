@@ -44,6 +44,7 @@ for prefix in (Path.cwd(), Path(__file__).resolve().parent, Path.home()/'.config
     if config_file.exists():
         try:
             config = yaml.load(config_file.open(), Loader=yaml.SafeLoader)
+            break
         except yaml.YAMLError as e:
             if hasattr(e, 'problem_mark'):
                 mark = e.problem_mark
