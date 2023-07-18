@@ -4,6 +4,7 @@ from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
 from atorch import ATORCHClient
+from xiaoxiang import XiaoXiangBMS
 
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
@@ -31,11 +32,11 @@ class Scanner:
     def client_done(self, address):
         del self.__devices[address]
 
-    async def run_client(self,device):
+    async def run_client(self,device, client):
         await self.scanner.stop()
         try:
             log.debug('Scanner paused')
-            client = ATORCHClient(device, self.__storage)
+            client = client(device, self.__storage)
             self.__devices[device.address] = client
             self.__quit.add_done_callback(lambda task: client.disconnect_event.set())
             client.task.add_done_callback(lambda task: self.client_done(device.address))
@@ -49,7 +50,8 @@ class Scanner:
 
     def detect(self,device:BLEDevice, advertising_data:AdvertisementData):
         names = self.match_data.get('names',())
-        if set(self.match_data.get('services',())) & set(advertising_data.service_uuids):
+        services = self.match_data.get('services',())
+        if set(services) & set(advertising_data.service_uuids):
             if names and advertising_data.local_name and advertising_data.local_name not in names:
                 log.debug('Device name %s(%s) service not found',device.name,advertising_data.local_name)
                 return
@@ -59,7 +61,12 @@ class Scanner:
         if device.address in self.__devices: return
         pprint(device)
         pprint(advertising_data)
-        asyncio.create_task(self.run_client(device))
+        if   '0000ffe0-0000-1000-8000-00805f9b34fb' in services: client = ATORCHClient
+        elif '0000ff00-0000-1000-8000-00805f9b34fb' in services: client = XiaoXiangBMS
+        else:
+            log.error("Unknown device")
+            return
+        asyncio.create_task(self.run_client(device, client))
         '''print('Local name',advertising_data.local_name)
         print('Manufacturer',advertising_data.manufacturer_data)
         print('Platform',advertising_data.platform_data)

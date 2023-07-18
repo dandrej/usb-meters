@@ -140,7 +140,7 @@ class Device:
     def tags(self):
         return {'device':self.device.name, 'start':self.start}
 
-    def atorch_decode(self, data: bytearray):
+    def decode(self, data: bytearray):
         if self.atorch_dc_part!=bytearray(b''):
             packet = ATORCH_DC_METER_DATA.create(self.atorch_dc_part+data)
             self.atorch_dc_part = bytearray(b'')
@@ -161,9 +161,6 @@ class Device:
         log.debug('Unknown ATORCH payload: %s', hexlify(payload))
         return None
 
-    def decode(self, data: bytearray):
-        packet = self.atorch_decode(data)
-        return packet
 
     def get_read_data(self, storage):
         def read_data(_: BleakGATTCharacteristic, data: bytearray):

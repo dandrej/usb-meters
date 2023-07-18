@@ -3,8 +3,10 @@ devices:
     - UD24_BLE
     - DT24TW_BLE
     - DL24M_BLE
+    - xiaoxiang BMS
   services:
-    - '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
+    #- '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
+    - '0000ff00-0000-1000-8000-00805f9b34fb' #XiaoXiang service
 storage:
   type: console
   influxdb:
@@ -23,7 +25,8 @@ logging:
     #- scanner
     #- client
   debug:
-    #- scanner
+    - scanner
     - client
     #- atorch
+    - xiaoxiang
 

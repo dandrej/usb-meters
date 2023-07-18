@@ -1,5 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from dataclasses import asdict as dataclass_asdict
 import sys
 import asyncio
 
@@ -16,6 +17,9 @@ module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
 from rich.pretty import pprint as rich_pprint
 
+def asdict(obj):
+    if hasattr(obj, 'asdict') and callable(getattr(obj, 'asdict')): return obj.asdict()
+    return dataclass_asdict(obj)
 
 class CSVStorage:
     def __init__(self, quit:asyncio.Task, path, is_gzip=False, kwargs:dict=dict()):
