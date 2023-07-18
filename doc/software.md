@@ -6,9 +6,12 @@ cd usb-meters
 pip install -r ble/requirements.txt
 ```
 ## Configure
-Bluetooth usb meters tested:
-- Atorch AT24
-- Atorch DT24TW
+Bluetooth devices tested:
+- Atorch UD24 https://www.aliexpress.com/item/1005001483503811.html
+- Atorch DT24TW https://www.aliexpress.com/item/1005003948599629.html
+- Atorch AT24CB https://www.aliexpress.com/item/1005002474832237.html
+- Atorch DL24M-H https://www.aliexpress.com/item/1005003474912240.html
+- XiaoXiang BMS
 
 Configuration file `ble-config.yml`.
 
@@ -48,7 +51,7 @@ The `influxdb` subkey contains the configuration of output to the InfluxDB datab
 |`bucket`|Bucket name that has been configured during [IndluxDB installation](influxdb.md)|
 
 ### Logging
-The logging key of the configuration file contains the logging configuration parameters. The subkeys of this key are logging levels: `critical`, `error`, `warning`, `info`, and `debug`. The subkeys of the logging levels may be script modules names `storage`, `scanner`, `client`, and `protocols`
+The logging key of the configuration file contains the logging configuration parameters. The subkeys of this key are logging levels: `critical`, `error`, `warning`, `info`, and `debug`. The subkeys of the logging levels may be script modules names `storage`, `scanner`, `client`, `atorch`, and `xiaoxiang`
 
 ## Run
 ```bash

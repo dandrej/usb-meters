@@ -123,11 +123,70 @@ class ATORCH_DC_METER_DATA:
         yield 'Fld2',hexlify(self.Fld2)
 
     @staticmethod
-    def measurement(): return 'dt24tw-usb-meter'
+    def measurement(): return 'dt24tw-meter'
     @staticmethod
     def tag_keys(): return None
     @staticmethod
     def field_keys(): return ('Voltage', 'Amp', 'Cap', 'Pwr', 'Temperature','RunTime','Backlight')
+    @staticmethod
+    def time_key(): return None
+
+@dataclass
+class ATORCH_AC_METER_DATA:
+    Voltage:float
+    Amp: float
+    Watt:float
+    Wh:float
+    Price:float
+    Freq:float
+    PF:float
+    Temperature:int
+    RunTime:float
+    Backlight:int
+    Fld:bytearray
+    @classmethod
+    def create(cls, data:bytearray):
+        #        V       A    Watt     Wh     Price Freq  PF    T  --Time-- Bklt
+        #01-01-0008a6-000000-000000-000003a3-000064-01f4-0000-0020-03e71811-3c-00000000
+        log.debug("Raw:%s",hexlify(data))
+        ret = cls(
+            Voltage = int.from_bytes(data[2:5], byteorder='big')/10.,
+            Amp = int.from_bytes(data[5:8], byteorder='big')/1000.,
+            Watt = int.from_bytes(data[8:11], byteorder='big')/10.,
+            Wh = int.from_bytes(data[11:15], byteorder='big')/100.,
+            Price = int.from_bytes(data[15:18], byteorder='big')/100.,
+            Freq = int.from_bytes(data[18:20], byteorder='big')/10.,
+            PF = int.from_bytes(data[20:22], byteorder='big')/1000.,
+            Temperature = int.from_bytes(data[22:24], byteorder='big'),
+            RunTime = datetime.timedelta(
+                hours=int.from_bytes(data[24:26], byteorder='big'),
+                minutes=data[26],
+                seconds=data[27]
+            ).total_seconds(),
+            Backlight=data[28],
+            Fld = data[29:]
+        )
+        pprint(ret)
+        return ret
+    def __rich_repr__(self):
+        yield 'Voltage',self.Voltage
+        yield 'Amp',self.Amp
+        yield 'Watt',self.Watt
+        yield 'Wh',self.Wh
+        yield 'Price',self.Price
+        yield 'Freq',self.Freq
+        yield 'PF',self.PF
+        yield 'Temp',self.Temperature
+        yield 'RunTime',str(datetime.timedelta(seconds=self.RunTime))
+        yield 'Backlight',self.Backlight
+        yield 'Fld',hexlify(self.Fld)
+
+    @staticmethod
+    def measurement(): return 'at24-meter'
+    @staticmethod
+    def tag_keys(): return None
+    @staticmethod
+    def field_keys(): return ('Voltage', 'Amp', 'Watt', 'Wh', 'Price', 'Freq', 'PF', 'Temperature', 'RunTime', 'Backlight')
     @staticmethod
     def time_key(): return None
 
@@ -158,6 +217,9 @@ class Device:
         if payload[1]==2:
             self.atorch_dc_part = payload
             return None
+        if payload[1]==1:
+            packet = ATORCH_AC_METER_DATA.create(payload)
+            return packet
         log.debug('Unknown ATORCH payload: %s', hexlify(payload))
         return None
 
