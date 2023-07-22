@@ -24,6 +24,14 @@ class Client:
         log.debug('Client %s disconnected',device.address)
         if not self.connect_event.is_set(): self.connect_event.set()
 
+    def explore(self, client):
+        for service in client.services:
+            log.debug(f'Service: {service}')
+            for char in service.characteristics:
+                log.debug(f'  Characteristic: {char} - {char.properties}')
+            #log.debug(f'Service: {service.uuid} - "{service.description}"')
+            #log.debug(f'Characteristics: {service.characteristics}')
+
     @abstractmethod
     async def run_protocol(self, client, device, storage)->None:
         ...

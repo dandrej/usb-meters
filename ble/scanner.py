@@ -5,6 +5,7 @@ from bleak.backends.scanner import AdvertisementData
 from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
 from atorch import ATORCHClient
 from xiaoxiang import XiaoXiangBMS
+from fnirsi import FNIRSI_USB
 
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
@@ -51,21 +52,23 @@ class Scanner:
     def detect(self,device:BLEDevice, advertising_data:AdvertisementData):
         names = self.match_data.get('names',())
         services = self.match_data.get('services',())
+        if not advertising_data.local_name: return
         if set(services) & set(advertising_data.service_uuids):
-            if names and advertising_data.local_name and advertising_data.local_name not in names:
+            if names and advertising_data.local_name and advertising_data.local_name.strip() not in names:
                 log.debug('Device name %s(%s) service not found',device.name,advertising_data.local_name)
                 return
-        elif names and advertising_data.local_name not in names:
+        elif names and advertising_data.local_name and advertising_data.local_name.strip() not in names:
             log.debug('Device name %s(%s) missmatch',device.name,advertising_data.local_name)
             return
         if device.address in self.__devices: return
         pprint(device)
         pprint(advertising_data)
-        if   '0000ffe0-0000-1000-8000-00805f9b34fb' in services: client = ATORCHClient
-        elif '0000ff00-0000-1000-8000-00805f9b34fb' in services: client = XiaoXiangBMS
-        else:
-            log.error("Unknown device")
-            return
+        #if   '0000ffe0-0000-1000-8000-00805f9b34fb' in advertising_data.service_uuids: client = ATORCHClient
+        #elif '0000ff00-0000-1000-8000-00805f9b34fb' in advertising_data.service_uuids: client = XiaoXiangBMS
+        #else:
+        #    log.error("Unknown device")
+        #    return
+        client = FNIRSI_USB
         asyncio.create_task(self.run_client(device, client))
         '''print('Local name',advertising_data.local_name)
         print('Manufacturer',advertising_data.manufacturer_data)
