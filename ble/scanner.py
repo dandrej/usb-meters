@@ -4,9 +4,8 @@ from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
 
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 
 class Scanner:
     def __init__(self, devs, quit:asyncio.Task, storage):

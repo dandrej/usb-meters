@@ -3,9 +3,8 @@ import datetime
 import struct
 import crc
 
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 
 crc_calculator = crc.Calculator(
     crc.Configuration(

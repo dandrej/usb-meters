@@ -6,9 +6,8 @@ import struct
 from binascii import hexlify
 from dataclasses import dataclass
 
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 
 @dataclass
 class Pack3: #sent once only. can't interprete the structure

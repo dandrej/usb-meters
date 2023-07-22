@@ -3,9 +3,8 @@ from bleak import BleakClient
 from bleak.backends.device import BLEDevice
 from abc import abstractmethod
 
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 
 class Client:
     def __init__(self, device:BLEDevice, storage):

@@ -5,9 +5,8 @@ import datetime
 from binascii import hexlify
 from client import Client
 
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 
 @dataclass
 class ATORCH_USB_METER_DATA:

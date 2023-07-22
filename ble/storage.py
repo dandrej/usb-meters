@@ -12,9 +12,8 @@ from influxdb_client.client.write.point import Point
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 
 import logging
-from modulelog import ModuleLogging
-module_log = ModuleLogging(__name__)
-log, pprint = module_log.init()
+import modulelog
+module_log, log, pprint = modulelog.init(__name__)
 from rich.pretty import pprint as rich_pprint
 
 def asdict(obj):

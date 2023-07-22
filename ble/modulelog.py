@@ -43,3 +43,8 @@ def setLevel(modules, level:str='debug', console=rich.get_console()):
     }
     for module_name in modules:
         import_module(module_name).module_log.setLevel(levels[level],console)
+
+def init(name):
+    module_log = ModuleLogging(name)
+    log, pprint = module_log.init()
+    return module_log, log, pprint
