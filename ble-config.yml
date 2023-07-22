@@ -1,14 +1,13 @@
 devices:
-  names:
-    #- UD24_BLE
-    #- DT24TW_BLE
-    #- DL24M_BLE
-    #- AT24_BLE
-    #- xiaoxiang BMS
+  atorch:
+    - UD24_BLE
+    - DT24TW_BLE
+    - DL24M_BLE
+    - AT24_BLE
+  xiaoxiang:
+    - xiaoxiang BMS
+  fnirsi:
     - FNB48s-021356
-  services: []
-    #- '0000ffe0-0000-1000-8000-00805f9b34fb' # ATorch service
-    #- '0000ff00-0000-1000-8000-00805f9b34fb' #XiaoXiang service
 storage:
   type: console
   influxdb:

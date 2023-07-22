@@ -11,6 +11,16 @@ module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
 
 @dataclass
+class Pack3: #sent once only. can't interprete the structure
+    #30006e006c5300003e0300000a07
+    pack:bytearray
+    @classmethod
+    def create(cls, data:bytearray):
+        return cls(pack=data)
+    def __rich_repr__(self):
+        yield 'pack',self.pack
+
+@dataclass
 class Pack4:
     voltage:float
     current:float
@@ -182,20 +192,17 @@ class Device:
                 pack = data[3:3+data[2]]
                 data=data[4+data[2]:]
                 if pack_type not in packs.keys():
-                    log.error(f'Unknown pack: {hexlify(data)}')
+                    log.error(f'Unknown pack {pack_type}: {hexlify(pack)}')
                     continue
                 info = packs[pack_type].create(pack)
                 storage.write(info, self.tags())
         return read_data
 
-class FNIRSI_USB(Client):
+class Cli(Client):
     async def run_protocol(self, client, device, storage)->None:
         #self.explore(client)
         dev = Device(device)
-        log.debug('notify')
         await client.start_notify('0000ffe4-0000-1000-8000-00805f9b34fb', dev.get_read_data(storage))
-        log.debug('write1')
         await client.write_gatt_char('0000ffe9-0000-1000-8000-00805f9b34fb', b'\xaa\x81\x00\xf4')
-        log.debug('write2')
         await client.write_gatt_char('0000ffe9-0000-1000-8000-00805f9b34fb', b'\xaa\x82\x00\xa7')
         await self.disconnect_event.wait()

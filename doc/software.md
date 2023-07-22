@@ -23,10 +23,11 @@ The file has to be placed in:
 
 ### Choose a right device
 The `device` key of the configuration file contains information about the devices the script working with.
-
-The subkey `names` contains the list of device names.
-
-The subkey `services` limits the device discovery to a list of services. Now only '0000ffe0-0000-1000-8000-00805f9b34fb' service for ATorch devices is supported.
+Subkeys are the device types. There are three types supported at the moment:
+- `atorch`
+- `rnirsi`
+- `xiaoxiang`
+The types subkeys are the names of the handled devices.
 
 ### Choose the data output
 The `storage` key of the configuration file contains information about output configurations and current output.

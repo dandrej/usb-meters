@@ -110,7 +110,7 @@ class Device:
                     storage.write(decoded_data, self.tags())
         return read_data
 
-class XiaoXiangBMS(Client):
+class Cli(Client):
     async def run_protocol(self, client, device, storage)->None:
         dev = Device(device)
         await client.start_notify('0000ff01-0000-1000-8000-00805f9b34fb',

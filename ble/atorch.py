@@ -233,7 +233,7 @@ class Device:
                 storage.write(decoded_data, self.tags())
         return read_data
 
-class ATORCHClient(Client):
+class Cli(Client):
     async def run_protocol(self, client, device, storage)->None:
         dev = Device(device)
         await client.start_notify('0000ffe1-0000-1000-8000-00805f9b34fb',

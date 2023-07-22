@@ -3,26 +3,26 @@ from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 from bleak.backends.bluezdbus.scanner import BlueZScannerArgs
-from atorch import ATORCHClient
-from xiaoxiang import XiaoXiangBMS
-from fnirsi import FNIRSI_USB
 
 from modulelog import ModuleLogging
 module_log = ModuleLogging(__name__)
 log, pprint = module_log.init()
 
 class Scanner:
-    def __init__(self, match_data, quit:asyncio.Task, storage):
+    def __init__(self, devs, quit:asyncio.Task, storage):
         self.__quit = quit
         self.__storage = storage
         self.__devices = {}
-        self.match_data = match_data
+        self.names = {}
+        dev_handlers = {}
+        for type in devs:
+            dev_handlers[type]=__import__(type,globals(),locals(),['Cli'],0).Cli
+        for type, names in devs.items():
+            self.names.update({name:dev_handlers[type] for name in names})
 
 
     async def run(self):
-        service_uuids = self.match_data.get('services')
-        #log.debug('services_uuids: %s',service_uuids)
-        self.scanner = BleakScanner(self.detect,service_uuids=service_uuids)
+        self.scanner = BleakScanner(self.detect)#,service_uuids=['0000ffe0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb','0000ffb0-0000-1000-8000-00805f9b34fb'])
         await self.scanner.start()
         await self.__quit
         log.debug('Scanner stops')
@@ -50,25 +50,14 @@ class Scanner:
             log.debug('Scanner resumed')
 
     def detect(self,device:BLEDevice, advertising_data:AdvertisementData):
-        names = self.match_data.get('names',())
-        services = self.match_data.get('services',())
         if not advertising_data.local_name: return
-        if set(services) & set(advertising_data.service_uuids):
-            if names and advertising_data.local_name and advertising_data.local_name.strip() not in names:
-                log.debug('Device name %s(%s) service not found',device.name,advertising_data.local_name)
-                return
-        elif names and advertising_data.local_name and advertising_data.local_name.strip() not in names:
-            log.debug('Device name %s(%s) missmatch',device.name,advertising_data.local_name)
+        if not advertising_data.local_name.strip() in self.names:
+            log.debug('Device name %s skip',advertising_data.local_name)
             return
         if device.address in self.__devices: return
         pprint(device)
         pprint(advertising_data)
-        #if   '0000ffe0-0000-1000-8000-00805f9b34fb' in advertising_data.service_uuids: client = ATORCHClient
-        #elif '0000ff00-0000-1000-8000-00805f9b34fb' in advertising_data.service_uuids: client = XiaoXiangBMS
-        #else:
-        #    log.error("Unknown device")
-        #    return
-        client = FNIRSI_USB
+        client = self.names[advertising_data.local_name.strip()]
         asyncio.create_task(self.run_client(device, client))
         '''print('Local name',advertising_data.local_name)
         print('Manufacturer',advertising_data.manufacturer_data)
